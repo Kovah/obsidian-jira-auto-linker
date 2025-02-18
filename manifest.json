@@ -1,0 +1,15 @@
+{
+	"id": "jira-linker",
+	"name": "Atlassian Jira Linker",
+	"version": "1.0.0-beta.1",
+	"minAppVersion": "1.0.0",
+	"description": "Automatically create links to Jira from issue IDs like APP-1426.",
+	"author": "Kevin Woblick",
+	"authorUrl": "https://kovah.de",
+	"fundingUrl": {
+		"Patreon": "https://patreon.com/Kovah",
+		"GitHub Sponsor": "https://github.com/Kovah",
+		"Liberapay": "https://liberapay.com/kovah"
+	},
+	"isDesktopOnly": false
+}
