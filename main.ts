@@ -86,14 +86,9 @@ class SampleSettingTab extends PluginSettingTab {
 
 	display(): void {
 		const {containerEl} = this;
-
 		containerEl.empty();
 
-		containerEl.createEl('h1', {text: 'Jira Linker'});
-		containerEl.createEl('p').innerHTML = 'by <a href="https://kovah.de" target="_blank">Kevin Woblick</a>';
-		containerEl.createEl('br');
-
-		containerEl.createEl('h2', {text: 'Projects'});
+		new Setting(containerEl).setName('Projects').setHeading();
 		containerEl.createEl('p', {text: 'Configure your projects here. The project key is the actual key from Jira and consists of uppercase letters or numbers without the dash and the issue number. The Jira URL must be set without a path, like https://example.atlassian.net.'});
 
 		// Display current registrations
