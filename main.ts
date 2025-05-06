@@ -5,22 +5,22 @@ interface JiraProjectRegistration {
 	baseUrl: string
 }
 
-interface JiraLinkerSettings {
+interface JiraAutoLinkerSettings {
 	registrations: Array<JiraProjectRegistration>;
 }
 
-const DEFAULT_SETTINGS: JiraLinkerSettings = {
+const DEFAULT_SETTINGS: JiraAutoLinkerSettings = {
 	registrations: [],
 };
 
-export default class JiraLinker extends Plugin {
-	settings: JiraLinkerSettings;
+export default class JiraAutoLinker extends Plugin {
+	settings: JiraAutoLinkerSettings;
 
 	async onload() {
 		await this.loadSettings();
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new JiraAutoLinkerSettingsTab(this.app, this));
 
-		this.registerMarkdownPostProcessor((el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
+		this.registerMarkdownPostProcessor((el: HTMLElement) => {
 			this.processLinks(el);
 		});
 	}
@@ -76,10 +76,10 @@ export default class JiraLinker extends Plugin {
 	}
 }
 
-class SampleSettingTab extends PluginSettingTab {
-	plugin: JiraLinker;
+class JiraAutoLinkerSettingsTab extends PluginSettingTab {
+	plugin: JiraAutoLinker;
 
-	constructor(app: App, plugin: JiraLinker) {
+	constructor(app: App, plugin: JiraAutoLinker) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
@@ -114,9 +114,9 @@ class SampleSettingTab extends PluginSettingTab {
 
 		// Add a new registration
 		new Setting(containerEl)
-			.setName('Add New Registration')
+			.setName('Add new registration')
 			.addText((text) =>
-				text.setPlaceholder('Project Key').onChange((value) => {
+				text.setPlaceholder('Project key').onChange((value) => {
 					newProjectKey = value;
 				})
 			)
@@ -135,7 +135,7 @@ class SampleSettingTab extends PluginSettingTab {
 						const baseUrlValid = /^https:\/\/[a-zA-Z0-9.-]+\.atlassian\.net$/.test(newBaseUrl);
 
 						if (!projectKeyValid) {
-							errorEl.textContent = 'Invalid Project Key. It must be 2-10 letters or numbers, starting with a letter.';
+							errorEl.textContent = 'Invalid project key. It must be 2-10 letters or numbers, starting with a letter.';
 							errorEl.classList.remove('hidden');
 							return;
 						}
@@ -152,14 +152,11 @@ class SampleSettingTab extends PluginSettingTab {
 							baseUrl: newBaseUrl,
 						});
 						await this.plugin.saveSettings();
-						this.display(); // Refresh UI
+						this.display();
 					})
 			);
 
-		const errorEl = containerEl.createEl('div', {
-			cls: 'jira-linker-error',
-			text: '',
-		});
+		const errorEl = new Setting(containerEl).setClass('jira-linker-error').controlEl;
 
 		containerEl.createEl('br');
 		containerEl.createEl('hr');

@@ -1,5 +1,5 @@
 {
-	"name": "jira-linker",
+	"name": "atlassian-jira-auto-linker",
 	"version": "1.0.0-beta.1",
 	"description": "Automatically create links to Jira from issue IDs like APP-1426.",
 	"main": "main.js",
@@ -13,7 +13,7 @@
 		"atlassian",
 		"jira"
 	],
-	"author": "Kevin Woblick <contact@kovah.de>",
+	"author": "Kevin Woblick <mail@woblick.dev>",
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^22.13.4",
