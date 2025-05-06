@@ -1,7 +1,7 @@
 {
 	"id": "atlassian-jira-auto-linker",
 	"name": "Atlassian Jira Auto-Linker",
-	"version": "1.0.0-beta.1",
+	"version": "1.0.0",
 	"minAppVersion": "1.0.0",
 	"description": "Automatically create links to Jira from issue IDs like APP-1426.",
 	"author": "Kevin Woblick",
