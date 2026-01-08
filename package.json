@@ -1,6 +1,6 @@
 {
 	"name": "atlassian-jira-auto-linker",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Automatically create links to Jira from issue IDs like APP-1426.",
 	"main": "main.js",
 	"scripts": {
