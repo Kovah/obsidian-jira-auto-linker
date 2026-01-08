@@ -1,8 +1,15 @@
-import {App, MarkdownPostProcessorContext, Plugin, PluginSettingTab, Setting} from 'obsidian';
+import {App, Plugin, PluginSettingTab, Setting} from 'obsidian';
 
 interface JiraProjectRegistration {
 	projectKey: string,
 	baseUrl: string
+}
+
+interface JiraLinkMatch {
+	start: number;
+	end: number;
+	matchedText: string;
+	registration: JiraProjectRegistration;
 }
 
 interface JiraAutoLinkerSettings {
@@ -21,46 +28,87 @@ export default class JiraAutoLinker extends Plugin {
 		this.addSettingTab(new JiraAutoLinkerSettingsTab(this.app, this));
 
 		this.registerMarkdownPostProcessor((el: HTMLElement) => {
-			this.processLinks(el);
+			this.processNode(el);
 		});
-	}
-
-	private processLinks(el: HTMLElement) {
-		this.processNode(el);
 	}
 
 	private processNode(node: Node) {
 		if (['A', 'CODE', 'PRE', 'IMG', 'svg', 'MJX-CONTAINER'].contains(node.nodeName)) {
-			return; // do not process specific node types to not break
+			return;
 		}
-		if (node.nodeType === Node.TEXT_NODE) {
-			// directly process text nodes
+
+		if (node.nodeType === Node.TEXT_NODE && node.nodeValue) {
 			const text = node.nodeValue;
-			if (text) {
-				const newHtml = this.replaceWithLinks(text);
-				if (newHtml !== text) {
-					const span = document.createElement('span');
-					span.innerHTML = newHtml;
-					node.parentNode?.replaceChild(span, node);
-				}
+			const matches = this.processLinks(text);
+
+			if (matches.length) {
+				this.replaceWithLinks(node, text, matches);
 			}
 		} else if (node.nodeType === Node.ELEMENT_NODE) {
-			// if an regular element was found, process its child nodes (applies to lists, fo example)
 			const element = node as HTMLElement;
-			for (let i = 0; i < element.childNodes.length; i++) {
+			for (let i = element.childNodes.length - 1; i >= 0; i--) {
 				this.processNode(element.childNodes[i]);
 			}
 		}
 	}
 
-	private replaceWithLinks(text: string): string {
-		return this.settings.registrations.reduce((modifiedText, registration) => {
-			const regex = new RegExp(`\\b(${registration.projectKey}-\\d+)\\b`, 'gi');
-			return modifiedText.replace(
-				regex,
-				(match) => `<a href="${registration.baseUrl}/browse/${match}" target="_blank" rel="noopener noreferrer">${match}</a>`
-			);
-		}, text);
+	private processLinks(text: string): Array<JiraLinkMatch> {
+		const matches: Array<JiraLinkMatch> = [];
+
+		for (const registration of this.settings.registrations) {
+			const escapedKey = registration.projectKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+			const regex = new RegExp(`\\b(${escapedKey}-\\d+)\\b`, 'gi');
+			let match: RegExpExecArray | null;
+
+			while ((match = regex.exec(text)) !== null) {
+				matches.push({
+					start: match.index,
+					end: regex.lastIndex,
+					matchedText: match[0],
+					registration
+				});
+			}
+		}
+
+		matches.sort((a, b) => a.start - b.start);
+
+		const filtered: Array<JiraLinkMatch> = [];
+		let lastEnd = 0;
+
+		for (const match of matches) {
+			if (match.start < lastEnd) {
+				continue;
+			}
+			filtered.push(match);
+			lastEnd = match.end;
+		}
+
+		return filtered;
+	}
+
+	private replaceWithLinks(node: Node, text: string, matches: Array<JiraLinkMatch>) {
+		const fragment = document.createDocumentFragment();
+		let cursor = 0;
+
+		for (const match of matches) {
+			if (match.start > cursor) {
+				fragment.appendChild(document.createTextNode(text.substring(cursor, match.start)));
+			}
+
+			const anchor = document.createElement('a');
+			anchor.textContent = match.matchedText;
+			anchor.href = `${match.registration.baseUrl}/browse/${match.matchedText}`;
+			anchor.target = '_blank';
+			anchor.rel = 'noopener noreferrer';
+			fragment.appendChild(anchor);
+			cursor = match.end;
+		}
+
+		if (cursor < text.length) {
+			fragment.appendChild(document.createTextNode(text.substring(cursor)));
+		}
+
+		node.parentNode?.replaceChild(fragment, node);
 	}
 
 	onunload() {
