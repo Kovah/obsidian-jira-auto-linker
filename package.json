@@ -16,14 +16,14 @@
 	"author": "Kevin Woblick <mail@woblick.dev>",
 	"license": "MIT",
 	"devDependencies": {
-		"@types/node": "^22.13.10",
+		"@types/node": "^25.5.0",
 		"@typescript-eslint/eslint-plugin": "^8.26.1",
 		"@typescript-eslint/parser": "^8.26.1",
-		"builtin-modules": "^4.0.0",
+		"builtin-modules": "^5.0.0",
 		"esbuild": "^0.25.1",
 		"esbuild-sass-plugin": "^3.3.1",
 		"obsidian": "latest",
 		"tslib": "^2.8.1",
-		"typescript": "^5.8.2"
+		"typescript": "^6.0.2"
 	}
 }
