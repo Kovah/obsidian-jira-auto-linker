@@ -20,6 +20,28 @@ const DEFAULT_SETTINGS: JiraAutoLinkerSettings = {
 	registrations: [],
 };
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null;
+}
+
+function isJiraProjectRegistration(value: unknown): value is JiraProjectRegistration {
+	return isRecord(value)
+		&& typeof value.projectKey === 'string'
+		&& typeof value.baseUrl === 'string';
+}
+
+function normalizeSettings(data: unknown): JiraAutoLinkerSettings {
+	if (!isRecord(data) || !Array.isArray(data.registrations)) {
+		return {
+			registrations: [...DEFAULT_SETTINGS.registrations],
+		};
+	}
+
+	return {
+		registrations: data.registrations.filter(isJiraProjectRegistration),
+	};
+}
+
 export default class JiraAutoLinker extends Plugin {
 	settings: JiraAutoLinkerSettings;
 
@@ -87,15 +109,15 @@ export default class JiraAutoLinker extends Plugin {
 	}
 
 	private replaceWithLinks(node: Node, text: string, matches: Array<JiraLinkMatch>) {
-		const fragment = document.createDocumentFragment();
+		const fragment = createFragment();
 		let cursor = 0;
 
 		for (const match of matches) {
 			if (match.start > cursor) {
-				fragment.appendChild(document.createTextNode(text.substring(cursor, match.start)));
+				fragment.appendChild(activeDocument.createTextNode(text.substring(cursor, match.start)));
 			}
 
-			const anchor = document.createElement('a');
+			const anchor = activeDocument.createElement('a');
 			anchor.textContent = match.matchedText;
 			anchor.href = `${match.registration.baseUrl}/browse/${match.matchedText}`;
 			anchor.target = '_blank';
@@ -105,7 +127,7 @@ export default class JiraAutoLinker extends Plugin {
 		}
 
 		if (cursor < text.length) {
-			fragment.appendChild(document.createTextNode(text.substring(cursor)));
+			fragment.appendChild(activeDocument.createTextNode(text.substring(cursor)));
 		}
 
 		node.parentNode?.replaceChild(fragment, node);
@@ -116,7 +138,8 @@ export default class JiraAutoLinker extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		const data: unknown = await this.loadData();
+		this.settings = normalizeSettings(data);
 	}
 
 	async saveSettings() {
