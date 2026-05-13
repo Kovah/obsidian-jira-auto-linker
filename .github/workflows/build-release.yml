@@ -16,21 +16,31 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "22.x"
+          node-version: "24.x"
 
       - name: Build plugin
         run: |
           npm ci
           npm run build
 
+      - name: Package release assets
+        run: zip jira-auto-linker-${{ github.ref_name }}.zip main.js manifest.json styles.css LICENSE README.md
+
+      - name: Attest release assets
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            main.js
+            manifest.json
+            styles.css
+            jira-auto-linker-${{ github.ref_name }}.zip
+
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag="${GITHUB_REF#refs/tags/}"
-          
-          zip jira-auto-linker-${{ github.ref_name }}.zip main.js manifest.json styles.css LICENSE README.md
-          
+
           gh release create "$tag" \
             --title="$tag" \
             --draft \
