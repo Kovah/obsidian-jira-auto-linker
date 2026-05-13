@@ -43,7 +43,7 @@ function normalizeSettings(data: unknown): JiraAutoLinkerSettings {
 }
 
 export default class JiraAutoLinker extends Plugin {
-	settings: JiraAutoLinkerSettings;
+	settings!: JiraAutoLinkerSettings;
 
 	async onload() {
 		await this.loadSettings();
