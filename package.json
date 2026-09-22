@@ -16,8 +16,8 @@
 	"author": "Kevin Woblick <mail@woblick.dev>",
 	"license": "MIT",
 	"devDependencies": {
-		"@types/node": "^25.9.5",
-		"@typescript-eslint/eslint-plugin": "^8.67.0",
+		"@types/node": "^25.9.6",
+		"@typescript-eslint/eslint-plugin": "^8.70.0",
 		"@typescript-eslint/parser": "^8.59.3",
 		"esbuild": "^0.28.2",
 		"esbuild-sass-plugin": "^3.7.0",
